@@ -1,1 +1,69 @@
+library(rJava)
+library(UpSetR)
+library(tidyverse)
+library(venneuler)
+library(grid)
+library(reshape)
+library(ggplot2)
+library(readxl)
+library(scales)
+library(eulerr)
+library(readr)
+library(VennDiagram)
+library("ggvenn")
+library("ggVennDiagram")
+library(enrichplot)
+library(DOSE)
 
+
+##import datasets into global environment###
+Kesherwani <- read.csv("C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/Kesherwani_GSE66575_RNAseq_genes_expression_original.csv")
+View(Kesherwani)
+
+dbdb_scRNAseq <- read.csv("C:/dbdb single cell DATA_cr5.0/DE_MAST_cpmDetRate_psignif_CR5/Original sub-clustered DE table ALSO FOR BULK/For_venn_DE_gene_list_wo_Rps.csv")
+View(dbdb_scRNAseq)
+
+dbdb_bulk <- read_csv("C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/dbdb_bulk_added_pval.csv")
+View(dbdb_bulk)
+
+#for GO analysis#
+raw_Akita <- Kesherwani$gene
+write.csv(raw_Akita, file = "C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/Bulk RNA DE gene lists/Total_Akita_genes.csv")
+raw_dbdb_bulk <- dbdb_bulk$GeneName
+write.csv(raw_dbdb_bulk, file = "C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/Bulk RNA DE gene lists/raw_dbdb_bulk.csv")
+raw_dbdb_scRNAseq <- dbdb_scRNAseq$gene
+write.csv(raw_dbdb_scRNAseq, file = "C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/Bulk RNA DE gene lists/Total_Akita_genes.csv")
+
+
+##filter gene list based on pval (P<0.001)##
+scRNAseq_dbdb_filtered <- filter(dbdb_scRNAseq, pval<=0.001)
+Kesherwani_filter <- filter(Kesherwani, p_value<=0.01)
+dbdb_bulk_filtered <- filter(dbdb_bulk, pvalue<=0.01)
+
+##remove redundant entries/genes##
+scRNAseq_dbdb_gene_list <- as.character(unique(scRNAseq_dbdb_filtered$gene))
+Akita_gene_list <- as.character(unique(Kesherwani_filter$gene))
+dbdb_bulk_gene_list <- as.character(unique(dbdb_bulk_filtered$GeneName))
+
+overlap=calculate.overlap(
+  x=list(
+    "A"=c(scRNAseq_dbdb_gene_list),
+    "B"=c(Akita_gene_list),
+    "C"=c(dbdb_bulk_gene_list)
+  )
+)
+
+x <- list(
+  A = sample(scRNAseq_dbdb_gene_list), 
+  B = sample(Akita_gene_list), 
+  C = sample(dbdb_bulk_gene_list)
+)
+
+ggvenn(
+  x, 
+  fill_color = c("dodgerblue", "olivedrab2", "springgreen"),
+  stroke_size = 0.5, set_name_size = 4
+)
+
+ggVennDiagram(x, label_alpha = 0.5,
+              category.names = c("dbdb scRNAseq", "Akita bulk", "dbdb bulk"))
