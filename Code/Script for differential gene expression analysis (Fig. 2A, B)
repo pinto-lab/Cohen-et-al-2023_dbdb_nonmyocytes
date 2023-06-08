@@ -15,19 +15,25 @@ library(readxl)
 library(openxlsx)
 
 # load seurat object with major cluster identities
-#dbdb <- readRDS("C:/dbdb single cell DATA_cr5.0/dbdb_Seurat_Object.rds")
+dbdb <- readRDS("C:/dbdb single cell DATA_cr5.0/dbdb_Seurat_Object.rds")
 Idents(dbdb) <- "RNA_snn_res.1.2"
+
+#rename clusters - add sub populations
 new.cluster.ids <- c("Fibroblast1", "Fibroblast2", "Endocardial1", "EC1", "Mac1", "Fibroblast3", "B-cells", "Fibroblast4", "LECs", "Fibroblast5", "Pericytes", "Endocardial2", "Mac2", "Mac3", "EC2", "T-cells", "EC3", "Fibroblast7", "DC-like", "NK-cells", "SMCs", "gd T-cells", "Granulocytes", "Fibroblast8", "Fibroblast9", "Schwann cells", "Epicardial")
 names(new.cluster.ids) <- levels(dbdb)
-# bulk labeling
 dbdb <- RenameIdents(dbdb, new.cluster.ids)
 
-
-assert_that(exists("dbdb"))
+#table summary -number of cells per each population
 pops <- as.character(dbdb@active.ident)
 table(pops)
+
+#defining treatment group in meta data
 dbdb@meta.data$trt <- ifelse(dbdb@meta.data$trt == "dbhplus", "dbhplus", "dbdb")
-dbdb@meta.data$major.clusters<-pops
+
+#store cluster identities a meta data slot
+dbdb@meta.data$mojor.clusters<-pops
+
+#run_MASTcpmDetRate  :function to perform DE analysis 
 
 run_MASTcpmDetRate <- function(L) {
   timing <- system.time({
@@ -50,19 +56,20 @@ run_MASTcpmDetRate <- function(L) {
                        row.names = names(mast[, "hurdle", "Pr(>Chisq)"])))
 }
 
-
+#ectract cluster lables for each cell from the seurat object
 clusters <- rownames_to_column(dbdb@meta.data[, "major.clusters", drop=FALSE], "cell") %>% 
   deframe()
 uclust <- unique(unname(clusters)) %>% sort()
 
-
+#extract count data matrix from the seurat object
 counts <- as.data.frame(dbdb@assays$RNA@counts) 
 counts<-counts[, unlist(dbdb@assays$RNA@data@Dimnames[2])]
 
-
+#extract treatment group information from the seurat object
 cond <- dbdb@meta.data[, "trt", drop=FALSE] %>% rownames_to_column("cell") %>%
   deframe()
 
+#perform DE analysis using run_MASTcpmDetRate function
 DE_results <- list()
 for (i in 1:length(uclust)) {
   cells <- names(clusters)[clusters == uclust[i]]
@@ -83,14 +90,10 @@ group_by(p_tidy,cluster)
 
 #saved as a csv file
 write.csv(p_signif,"C:/dbdb single cell DATA_cr5.0/DE_MAST_cpmDetRate_psignif_CR5/DE_MASTcmpDetRate_psignif_v9.csv")
-
-
-
+#read csv file
 p_signif<-read.csv("C:/dbdb single cell DATA_cr5.0/DE_MAST_cpmDetRate_psignif_CR5/DE_MASTcmpDetRate_psignif_v9.csv")[,-1]
 
-
-
-#dbdb<-SetIdent(dbdb,ident.use=dbdb@meta.data$major.clusters)
+#calculate average gene expression gene
 genes <- unique(p_signif$gene)
 avg <- AverageExpression(dbdb, features=genes)
 nonzero <- apply(counts, 1, function(vals) 
@@ -140,21 +143,26 @@ for (name in c("dbhplus", "dbdb")) {
 }
 
 
-
+#write De results into a dataframe
 DE.table1<-NULL
 for(i in 1:length(uclust)){
   DE.table<-p_signif[p_signif$cluster==paste(uclust[i]),]
+  #applying pct cut-off; percentage of cells expressing a given gene
   DE.table<-DE.table[DE.table$pct_nonzero_dbhplus>=0.1|DE.table$pct_nonzero_dbdb>=0.1,]
-  #DE.table$BH.pvalue<-p.adjust( DE.table$pval,method = "BH")
-  #DE.table<-DE.table[DE.table$pval<=0.05,]
+  #adjust for multiple hypothesis testing
+  DE.table$BH.pvalue<-p.adjust( DE.table$pval,method = "BH")
+  #apply p value cut-off to identify DE genes
+  DE.table<-DE.table[DE.table$pval<=0.05,]
   DE.table1<-rbind(DE.table,DE.table1)
 }
 p_signif1<-DE.table1
+
+#write DE results into a csv file
 write.csv(p_signif,"C:/dbdb single cell DATA_cr5.0/DE_MAST_cpmDetRate_psignif_CR5/DE_MASTcmpDetRate_psignif_v9.csv",row.names = FALSE)
 
 towrite <- c( split(p_signif1, p_signif1$cluster))
 
-
+#comple csv files into a multiple-sheet excel file
 library(openxlsx)
 DE.genes<- createWorkbook("DE.genes")
 for(i in 1:length(uclust)){
