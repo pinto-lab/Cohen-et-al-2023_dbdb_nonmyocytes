@@ -16,19 +16,20 @@ library(AnnotationDbi)
 library(clusterProfiler)
 library(viridis)
 
+#load data
 load("C:/dbdb single cell DATA_cr5.0/dbdb_Seurat_Final_Object.RData")
-
 Idents(dbdb) <- "RNA_snn_res.1.2"
+#rename clusters with sub population names
 new.cluster.ids <- c("Fibroblast1", "Fibroblast2", "Endocardial1", "EC1", "Mac1", "Fibroblast3", "B-cells", "Fibroblast4", "LECs", "Fibroblast5", "Pericytes", "Endocardial2", "Mac2", "Mac3", "EC2", "T-cells", "EC3", "Fibroblast7", "DC-like", "NK-cells", "SMCs", "gd T-cells", "Granulocytes", "Fibroblast8", "Fibroblast9", "Schwann cells", "Epicardial")
 names(new.cluster.ids) <- levels(dbdb)
-assert_that(exists("dbdb"))
 dbdb <- RenameIdents(dbdb, new.cluster.ids)
 
+#subset healthy and dbdb cells
 dbdb_alone <- subset(x = dbdb, subset= (trt == "dbdb"))
 dbh_alone <- subset(x = dbdb, subset = (trt == "dbhplus"))
 
 
-#######################  Macrophage subsetting dbdb mk1.1 ###################################
+# Macrophage subsetting and marker gene analysis
 dbh_Mac_subset <- subset(x = dbh_alone,
                      idents = c("Mac1", "Mac2", "Mac3"))
 
@@ -38,9 +39,7 @@ dbdb_MacSubset <- subset(x = dbdb_alone,
 merged_MacSubset <- subset(x = dbdb,
                            idents = c("Mac1", "Mac2", "Mac3"))
 
-# MacDEG<-FindAllMarkers(dbh_Mac_subset)  
 
-# write.csv(MacDEG, file = "C:/dbdb single cell DATA_cr5.0/dbhMacDEGs.csv")
 
 ### cell number table ###
 cellnumber_table <- as.data.frame.matrix(table(dbdb@active.ident, dbdb@meta.data$trt))
@@ -55,10 +54,8 @@ dbh_cellnumber$cluster <- row.names(dbh_cellnumber)
 row.names(dbdb_cellnumber) <- NULL
 row.names(dbh_cellnumber) <- NULL
 
-###################################
 
-#dbh_macrophages <- FindAllMarkers(Mac_subset)
-
+#Figure 5D
 Genes1 = c("Csf1r", "Mrc1", "H2-Ab1", "C1qa", "C1qb", "Adgre1")
 VlnPlot(merged_MacSubset, features=Genes1, pt.size = 0, stack=T, flip=T, 
         cols = c("tomato", "palevioletred2", "darkorchid3", "springgreen4", "green") +
@@ -79,8 +76,10 @@ DimPlot(merged_MacSubset, reduction = "tSNE",label=TRUE, pt.size = 1.3, label.si
 DimPlot(merged_MacSubset, reduction = "tSNE",label=TRUE, pt.size = 1.7, label.size=5, 
         cols = c("#FB6A4A", "#E6550D", "orangered"))
 
-##Subset Macrophages for GO analysis ##
 
+#Subset Macrophages, find marker genes and perform GO analysis 
+
+#run findallmarkers function
 all.genes <- FindAllMarkers(merged_MacSubset)
 
 Mac1_2_subset <-subset(x = dbh_alone,
@@ -122,6 +121,7 @@ go.result<-go.result[go.result$Count>=2,]
 #save files
 write.csv(go.result,paste("C:/dbdb single cell DATA_cr5.0/GO analysis/Macrophage GO terms", ".csv"))
 
+#Figure 5E
 barplot(enrichGO.results.2, color = "pvalue", order=TRUE, showCategory = 20)
 
 write.csv(go.result, file =  "C:/dbdb single cell DATA_cr5.0/Macrophages in dbdb/GO analysis Macrophages in dbdb.csv")
