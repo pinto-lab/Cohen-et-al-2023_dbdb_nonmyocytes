@@ -1,5 +1,5 @@
 #############################################################################################
-# Name : Analysis of scRNA-seq kidney data -DE testing with MASTcpmDetRate
+# Name : R script to perform differential gene expression analysis using MASTcpmDetRate
 #############################################################################################
 
 library(dplyr)
