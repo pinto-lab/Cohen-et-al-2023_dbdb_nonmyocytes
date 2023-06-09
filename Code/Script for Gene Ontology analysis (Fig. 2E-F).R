@@ -1,6 +1,7 @@
 ###################################################################### 
-# R script to perform Gene Ontology analysis for up and Down reglalated genes- Cohen et al 2023
+# Name: R script to perform Gene Ontology analysis for up and Down reglalated genes
 ###################################################################### 
+
 library(clusterProfiler)
 library(Seurat)
 library(tidyverse)
