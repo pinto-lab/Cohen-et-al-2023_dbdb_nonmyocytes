@@ -1,3 +1,6 @@
+###################################################################### 
+# Name: R script to perform preliminary analysis to generate 'dbdb' seurat object
+###################################################################### 
 
 library(dplyr)
 library(Seurat)
