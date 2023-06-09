@@ -12,6 +12,3 @@ Diabetes is associated with a significantly elevated risk of heart failure. Howe
 Sequencing data is publicly available at Array Express, accession number E-MTAB-11940
 
 
-## Script description
-
-### Script for finding cell specific markers
