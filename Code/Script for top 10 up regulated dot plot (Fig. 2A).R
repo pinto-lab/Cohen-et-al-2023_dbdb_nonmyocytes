@@ -1,7 +1,7 @@
 ##################################################################################################################
 # Name   : Script to generate dot plot for top 10 Up-regulated genes
-# Discription: This script will plot a dotplot for a merged list of top 10 UR and DR genes identified in each cell population
-#> with MASTcpmDetRate with 0.1 pct cutoff and pval<=0.01. 
+# Discription: This script will plot a dotplot for a merged list of top 10 UR genes identified in each cell population
+#> with MASTcpmDetRate with 0.1 pct cutoff and pval<=0.001. 
 ##################################################################################################################
 
 library(Seurat)
@@ -16,17 +16,15 @@ library(ggplot2)
 library(tidyverse)
 library(dplyr)
 
+#load data
+load("C:/dbdb single cell DATA_cr5.0/dbdb_Seurat_Final_Object.RData")
+
 # dbdb and dbh tSNE initial
 DimPlot(dbdb, reduction = "tSNE",  pt.size = 1.5, label = TRUE) +NoLegend()
 
-# dbdb and dbh tSNE after renaming
-DimPlot(dbdb, reduction = "tSNE",  pt.size = 1.5, label = TRUE) +NoLegend()
 # Add cell name to meta data in "_cellname_"
 dbdb@meta.data[["_cellname_"]] <- Idents(object = dbdb)
 
-
-# dbdb and dbh tSNE after renaming
-DimPlot(dbdb, reduction = "tSNE",  pt.size = 1.5, label = TRUE) +NoLegend()
 # Add cell name to meta data in "_cellnameBroad_"
 dbdb@meta.data[["_cellnameBroad_"]] <- Idents(object = dbdb)
 
@@ -39,7 +37,6 @@ my_levels <- sort(names(table(pops)))
 
 # Leveling the cluster names in object based on sorted cluster names
 dbdb@active.ident <- factor(x = dbdb@active.ident, levels = my_levels)
-
 
 # Subset seurat object based on condition and save into a list (For fetching UR or DR data)
 sub_object_list <- list()
@@ -192,6 +189,6 @@ p <- p + theme(axis.text.x = element_text(angle = 90,
 p
 
 
-#dim save 1300x650
+
 ##################################################################################################################
 
