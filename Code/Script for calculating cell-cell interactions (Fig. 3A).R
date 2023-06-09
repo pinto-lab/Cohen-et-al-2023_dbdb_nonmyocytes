@@ -1,8 +1,10 @@
-#### Below is the script for generating figure shown in Figure 3A, performed using output generated using CellPhoneDb.  ###
+############################################################################################
+# Name: R script for generating figure shown in Figure 3A
+# This script will use the output generated from CellPhoneDB analysis
+############################################################################################
 
 
 library(pheatmap)
-
 
 heatmaps_plot = function(count_matrix_ofn, meta_file, pvalues_file, count_filename, log_filename, count_network_filename, interaction_count_filename, count_network_separator, interaction_count_separator, show_rownames = T, show_colnames = T,
                          scale="none", cluster_cols = T, border_color='white', cluster_rows = T, fontsize_row=11,
