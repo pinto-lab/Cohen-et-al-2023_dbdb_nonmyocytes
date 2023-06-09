@@ -14,8 +14,8 @@ library("ggvenn")
 library("ggVennDiagram")
 library(enrichplot)
 library(DOSE)
-##import datasets into global environment###
 
+##import datasets into global environment###
 Kesherwani <- read.csv("C:/dbdb single cell DATA_cr5.0/Bulk RNA seq/Kesherwani_GSE66575_RNAseq_genes_expression_original.csv")
 View(Kesherwani)
 
@@ -85,11 +85,6 @@ expressionInput <- c('Akita' = Akita_gene_list, 'dbdb_scRNAseq' = scRNAseq_dbdb_
 # Create the Venn diagram
 plot(ggvenn(x, fill_color = "dodgerblue", "coral", "springgreen", stroke_size = 0.5, set_name_size = 3))
 
-##ACTUAL VALUES IN GREY BELOW - NEEDS TO BE PROPORTIONAL FOR VENNEULER##
-###myExpVenn <- venneuler(c(A = 2914,B = 342, C = 218, 
-                        # "A&B" = 87, "A&C" = 43,
-                         #"B&C" = 10,
-                         #"A&B&C" = 7))
 
 ##values MUST be proportional for this package to work correctly, see below for proportional values of above raw vals###
 ##A = dbdb scRNAseq, B = Akita, C = dbdb bulk##
@@ -232,6 +227,3 @@ barplot.enrichResult <- function(height, x="Count", color='p.adjust', showCatego
 barplot(enrichGO.results.2_filter2, color = "pvalue", order=TRUE, showCategory = 20)
  
 
-##save portrait 5.0 x 7.0##
-## can amend the bar plots in seperate function, named
-### CHANGING COLOURS OF BARPLOT FOR COMMON GO TERMS IN THE DIABETIC HEART ###
